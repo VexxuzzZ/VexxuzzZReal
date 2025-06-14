@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vonzie Database</title>
+  <style>
+    * { box-sizing: border-box; font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    body { background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    .login-box, .main-box {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.08);
+      width: 90%;
+      max-width: 420px;
+    }
+    h2 { margin-bottom: 20px; text-align: center; color: #5e17eb; }
+    input[type="password"], input[type="text"] {
+      width: 100%; padding: 12px;
+      border: 1px solid #ccc; border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    button {
+      width: 100%; padding: 12px;
+      background-color: #5e17eb; color: white;
+      border: none; border-radius: 8px;
+      font-weight: bold; cursor: pointer;
+    }
+    button:hover { background-color: #4912c5; }
+    .subtitle { text-align: center; margin: 15px 0; color: #28a745; font-weight: bold; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td {
+      padding: 10px; border-bottom: 1px solid #ddd; text-align: left;
+      font-size: 15px;
+    }
+    #searchInput {
+      margin-bottom: 10px;
+    }
+    footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 13px;
+      color: #999;
+    }
+    footer a { color: #5e17eb; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <!-- Login Box -->
+  <div class="login-box" id="loginBox">
+    <h2>Login Admin</h2>
+    <input type="password" id="loginPassword" placeholder="Masukkan password..." />
+    <button onclick="checkLogin()">Login</button>
+  </div>
+
+  <!-- Main Box -->
+  <div class="main-box" id="mainBox" style="display: none;">
+    <h2>Vonzie Database</h2>
+    <div class="subtitle">Daftar Nomor Aktif</div>
+    <input type="text" id="searchInput" placeholder="Cari nomor..." onkeyup="cariNomor()" />
+    <table>
+      <thead>
+        <tr>
+          <th>Nomor</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="isiTabel">
+        <tr><td colspan="2">Memuat data...</td></tr>
+      </tbody>
+    </table>
+    <footer>
+      Dibuat oleh <a href="https://wa.me/6281234567890" target="_blank">Vonzie Developer</a>
+    </footer>
+  </div>
+
+  <!-- Script Utama -->
+  <script>
+    function checkLogin() {
+      const password = document.getElementById("loginPassword").value;
+      if (password === "vonzie123") {
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("mainBox").style.display = "block";
+        tampilkanData();
+      } else {
+        alert("Password salah!");
+      }
+    }
+
+    function tampilkanData() {
+      fetch("https://dreast-inviz-database.vercel.app/raw")
+        .then(res => res.text())
+        .then(text => {
+          const isiTabel = document.getElementById("isiTabel");
+          isiTabel.innerHTML = "";
+          try {
+            const data = JSON.parse(text);
+            if (!Array.isArray(data)) throw "Format salah";
+            data.forEach(item => {
+              isiTabel.innerHTML += `
+                <tr>
+                  <td>${item.number}</td>
+                  <td>${item.status}</td>
+                </tr>
+              `;
+            });
+          } catch (err) {
+            isiTabel.innerHTML = "<tr><td colspan='2'>Gagal memuat data</td></tr>";
+            console.error(err);
+          }
+        })
+        .catch(() => {
+          document.getElementById("isiTabel").innerHTML = "<tr><td colspan='2'>Gagal terhubung</td></tr>";
+        });
+    }
+
+    function cariNomor() {
+      const keyword = document.getElementById("searchInput").value.toLowerCase();
+      const rows = document.querySelectorAll("#isiTabel tr");
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(keyword) ? "" : "none";
+      });
+    }
+  </script>
+
+  <!-- Firebase Script (aktif, tapi tidak digunakan untuk fetch data di sini) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBgPWqTDnC36NU7d_hdvxu_fn2wKatXCmw",
+      authDomain: "vonzie-database.firebaseapp.com",
+      databaseURL: "https://dreastinvizreal-default-rtdb.firebaseio.com",
+      projectId: "vonzie-database",
+      storageBucket: "vonzie-database.appspot.com",
+      messagingSenderId: "493170457024",
+      appId: "1:493170457024:web:cf76e27d1d9c3f0f4ef025",
+      measurementId: "G-11SN80QH70"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Contoh penggunaan Firebase (opsional)
+    // const refBaru = push(ref(db, "testData"), { number: "628xxx", status: "active" });
+  </script>
+</body>
+</html>
